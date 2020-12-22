@@ -10,6 +10,7 @@ interface LayersInformation {
   grandParentId?: number;
   description: string;
   active: boolean;
+  visible?: boolean;
 }
 
 @Component({
@@ -58,7 +59,7 @@ export class AppComponent {
         this.StructureTypeInfo.push({
           id: layerId,
           description: SType.Description,
-          active: false
+          active: false,
         });
         SType.DataPointTypes.forEach(
           (DataType: any, DataPointTypeId: number) => {
@@ -67,19 +68,20 @@ export class AppComponent {
               id: DataPointTypeId,
               parentId: layerId,
               description: DataType.Description,
-              active: false
+              active: false,
             });
             DataType.SubStructures.forEach(
               (SubStructureType: any, SubStructureId: number) => {
                 this.SubStructureTypeArray.push(
-                  this.fb.control(SubStructureType.Layer.Active)
+                  this.fb.control(false)
                 );
                 this.SubStructureInfo.push({
                   id: SubStructureId,
                   parentId: DataPointTypeId,
                   grandParentId: layerId,
                   description: SubStructureType.Description,
-                  active: false
+                  active: false,
+                  visible: false
                 });
               }
             );
@@ -91,18 +93,37 @@ export class AppComponent {
         StructureTypesArray.forEach((e: boolean, i: number) => {
           this.StructureTypeInfo[i].active = e
         });
+        this.updateVisibleLayers()
       });
 
-      this.allStructures.valueChanges.subscribe(({DataPointsArray}) => {       
+      this.allStructures.valueChanges.subscribe(({ DataPointsArray }) => {
         DataPointsArray.forEach((e: boolean, i: number) => {
           this.dataPointInfo[i].active = e
         });
+        this.updateVisibleLayers()
+      });
+
+      this.allDataPoints.valueChanges.subscribe(({ SubStructuresArray }) => {
+        SubStructuresArray.forEach((e: boolean, i: number) => {
+          this.SubStructureInfo[i].active = e
+        });
+        this.updateVisibleLayers()
       });
 
     })
   }
 
+  updateVisibleLayers() {
+    this.SubStructureInfo.forEach((subStr: LayersInformation, index: number) => {
+      if (this.StructureTypeInfo[subStr.grandParentId].active && this.dataPointInfo[subStr.parentId].active  && this.SubStructureInfo[subStr.id].active) {
+        this.SubStructureInfo[index].visible = true
+      }
+    });
+  }
+
   test() {
-    this.cartesianData.layersInfo().subscribe((layers) => { console.log(layers) });
+    this.SubStructureInfo.forEach(({ visible, active }, i) => {
+      console.log(visible, i);
+    });
   }
 }
