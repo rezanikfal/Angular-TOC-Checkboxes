@@ -4,12 +4,20 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormArray, FormBuilder } from '@angular/forms';
 import { GlobalCartesianDataService } from '../app/global-cartesian-data.service';
 
-interface LayersInformation {
+interface ILayersInformation {
   parentId?: number;
   grandParentId?: number;
   description: string;
   active: boolean;
   visible?: boolean;
+  dbId: number
+}
+
+interface IGISLayers {
+  visible: boolean;
+  StructureTypeId: number;
+  DataPointTypeId: number;
+  SubStructureId: number;
 }
 
 @Component({
@@ -18,14 +26,15 @@ interface LayersInformation {
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  StructureTypeInfo: LayersInformation[] = [];
-  dataPointInfo: LayersInformation[] = [];
-  SubStructureInfo: LayersInformation[] = [];
+  StructureTypeInfo: ILayersInformation[] = [];
+  dataPointInfo: ILayersInformation[] = [];
+  SubStructureInfo: ILayersInformation[] = [];
+  SubStructureGIS: IGISLayers[] = [];
 
   constructor(
     private cartesianData: GlobalCartesianDataService,
     private fb: FormBuilder
-  ) {}
+  ) { }
 
   allLayers = new FormGroup({
     StructureTypesArray: this.fb.array([]),
@@ -58,6 +67,7 @@ export class AppComponent {
         this.StructureTypeInfo.push({
           description: SType.Description,
           active: false,
+          dbId: SType.StructureTypeId
         });
         SType.DataPointTypes.forEach(
           (DataType: any, DataPointTypeId: number) => {
@@ -66,6 +76,7 @@ export class AppComponent {
               parentId: this.StructureTypeInfo.length - 1,
               description: DataType.Description,
               active: false,
+              dbId: DataType.DataPointTypeId
             });
             DataType.SubStructures.forEach(
               (SubStructureType: any, SubStructureId: number) => {
@@ -76,6 +87,7 @@ export class AppComponent {
                   description: SubStructureType.Description,
                   active: false,
                   visible: false,
+                  dbId: SubStructureType.SubStructureId
                 });
               }
             );
@@ -107,38 +119,34 @@ export class AppComponent {
   }
 
   updateVisibleLayers() {
-    console.log(this.StructureTypeInfo);
-    console.log(this.dataPointInfo);
-    console.log(this.SubStructureInfo);
-
+    // this.SubStructureGIS.length = this.SubStructureInfo.length
     this.SubStructureInfo.forEach(
-      (subStr: LayersInformation, index: number) => {
-        this.SubStructureInfo[index].visible =
-          this.StructureTypeInfo[subStr.grandParentId].active &&
-          this.dataPointInfo[subStr.parentId].active &&
-          subStr.active;
+      (subStr: ILayersInformation, index: number) => {
+
+        this.SubStructureGIS.splice(index, 0, {
+          visible: this.StructureTypeInfo[subStr.grandParentId].active &&
+            this.dataPointInfo[subStr.parentId].active &&
+            subStr.active,
+          StructureTypeId: this.StructureTypeInfo[subStr.grandParentId].dbId,
+          DataPointTypeId: this.dataPointInfo[subStr.parentId].dbId,
+          SubStructureId: subStr.dbId
+        })
+
+        // this.SubStructureGIS[index].visible =
+        //   this.StructureTypeInfo[subStr.grandParentId].active &&
+        //   this.dataPointInfo[subStr.parentId].active &&
+        //   subStr.active
+        // this.SubStructureGIS[index].StructureTypeId = this.StructureTypeInfo[subStr.grandParentId].dbId
+        // this.SubStructureGIS[index].DataPointTypeId = this.dataPointInfo[subStr.parentId].dbId
+        // this.SubStructureGIS[index].SubStructureId = subStr.dbId
       }
-    );
+    )
+
   }
 
   test() {
-    this.SubStructureInfo.forEach(({ visible, active }, i) => {
-      console.log(visible, i);
+    this.SubStructureGIS.forEach((AA, i) => {
+      console.log(AA, i);
     });
-    // this.SubStructureInfo.forEach(
-    //   (subStr: LayersInformation, index: number) => {
-    //     console.log(this.StructureTypeInfo[subStr.grandParentId].active, index);
-    //     console.log(this.dataPointInfo[subStr.parentId].active, index);
-    //     console.log(subStr.active, index);
-    //     console.log(
-    //       this.StructureTypeInfo[subStr.grandParentId].active &&
-    //         this.dataPointInfo[subStr.parentId].active &&
-    //         subStr.active,
-    //       index
-    //     );
-    //     console.log(this.SubStructureInfo[index].visible);
-    //     console.log('-----------------------------------------------');
-    //   }
-    // );
   }
 }
