@@ -3,12 +3,12 @@
         <input type="checkbox" [formControlName]='STid'> {{StructureTypeInfo[STid].description}}
         <form [formGroup]="allStructures" *ngIf="StructureTypeInfo[STid].active">
             <div formArrayName='DataPointsArray' *ngFor="let item of DataPointArray.controls; let DTid=index">
-                <ng-container *ngIf="dataPointInfo[DTid].parentId ==StructureTypeInfo[STid].id">
+                <ng-container *ngIf="dataPointInfo[DTid].parentId ==STid">
                     <input style="margin-left: 20px;" type="checkbox" [formControlName]='DTid'> {{dataPointInfo[DTid].description}}
                     <form [formGroup]="allDataPoints" *ngIf="dataPointInfo[DTid].active">
                       <div formArrayName='SubStructuresArray'
                           *ngFor="let item of SubStructureTypeArray.controls; let SSid=index">
-                          <ng-container  *ngIf="SubStructureInfo[SSid].parentId ==dataPointInfo[DTid].id && SubStructureInfo[SSid].grandParentId ==StructureTypeInfo[STid].id">
+                          <ng-container  *ngIf="SubStructureInfo[SSid].parentId ==DTid && SubStructureInfo[SSid].grandParentId ==STid">
                           	<input style="margin-left: 40px;" type="checkbox" [formControlName]='SSid'> {{SubStructureInfo[SSid].description}}
                           </ng-container>
                       </div>
