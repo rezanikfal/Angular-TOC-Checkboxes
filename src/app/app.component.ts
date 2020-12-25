@@ -62,7 +62,7 @@ export class AppComponent {
 
   ngOnInit(): void {
     this.cartesianData.layersInfo().subscribe((layers) => {
-      layers.forEach((SType: any, layerId: number) => {
+      layers.forEach((SType: any) => {
         this.StructureTypeArray.push(this.fb.control(false));
         this.StructureTypeInfo.push({
           description: SType.Description,
@@ -70,7 +70,7 @@ export class AppComponent {
           dbId: SType.StructureTypeId
         });
         SType.DataPointTypes.forEach(
-          (DataType: any, DataPointTypeId: number) => {
+          (DataType: any) => {
             this.DataPointArray.push(this.fb.control(false));
             this.dataPointInfo.push({
               parentId: this.StructureTypeInfo.length - 1,
@@ -79,7 +79,7 @@ export class AppComponent {
               dbId: DataType.DataPointTypeId
             });
             DataType.SubStructures.forEach(
-              (SubStructureType: any, SubStructureId: number) => {
+              (SubStructureType: any) => {
                 this.SubStructureTypeArray.push(this.fb.control(false));
                 this.SubStructureInfo.push({
                   parentId: this.dataPointInfo.length - 1,
@@ -119,11 +119,10 @@ export class AppComponent {
   }
 
   updateVisibleLayers() {
-    // this.SubStructureGIS.length = this.SubStructureInfo.length
     this.SubStructureInfo.forEach(
       (subStr: ILayersInformation, index: number) => {
 
-        this.SubStructureGIS.splice(index, 0, {
+        this.SubStructureGIS.splice(index, 1, {
           visible: this.StructureTypeInfo[subStr.grandParentId].active &&
             this.dataPointInfo[subStr.parentId].active &&
             subStr.active,
@@ -131,14 +130,6 @@ export class AppComponent {
           DataPointTypeId: this.dataPointInfo[subStr.parentId].dbId,
           SubStructureId: subStr.dbId
         })
-
-        // this.SubStructureGIS[index].visible =
-        //   this.StructureTypeInfo[subStr.grandParentId].active &&
-        //   this.dataPointInfo[subStr.parentId].active &&
-        //   subStr.active
-        // this.SubStructureGIS[index].StructureTypeId = this.StructureTypeInfo[subStr.grandParentId].dbId
-        // this.SubStructureGIS[index].DataPointTypeId = this.dataPointInfo[subStr.parentId].dbId
-        // this.SubStructureGIS[index].SubStructureId = subStr.dbId
       }
     )
 
@@ -146,7 +137,7 @@ export class AppComponent {
 
   test() {
     this.SubStructureGIS.forEach((AA, i) => {
-      console.log(AA, i);
+      console.log(AA.visible, i);
     });
   }
 }
