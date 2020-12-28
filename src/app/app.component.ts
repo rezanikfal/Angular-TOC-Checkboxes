@@ -5,16 +5,14 @@ import { FormGroup, FormControl, FormArray, FormBuilder } from '@angular/forms';
 import { GlobalCartesianDataService } from '../app/global-cartesian-data.service';
 
 interface ILayersInformation {
-  parentId?: number;
-  grandParentId?: number;
   description: string;
   active: boolean;
-  visible?: boolean;
-  dbId: number
+  parentIndex?: number
 }
 
-interface IGISLayers {
+interface IFeatureData extends ILayersInformation {
   visible: boolean;
+  checked: boolean;
   StructureTypeId: number;
   DataPointTypeId: number;
   SubStructureId: number;
@@ -28,8 +26,7 @@ interface IGISLayers {
 export class AppComponent {
   StructureTypeInfo: ILayersInformation[] = [];
   dataPointInfo: ILayersInformation[] = [];
-  SubStructureInfo: ILayersInformation[] = [];
-  SubStructureGIS: IGISLayers[] = [];
+  SubStructureInfo: IFeatureData[] = [];
 
   constructor(
     private cartesianData: GlobalCartesianDataService,
@@ -67,27 +64,27 @@ export class AppComponent {
         this.StructureTypeInfo.push({
           description: SType.Description,
           active: false,
-          dbId: SType.StructureTypeId
         });
         SType.DataPointTypes.forEach(
           (DataType: any) => {
             this.DataPointArray.push(this.fb.control(false));
             this.dataPointInfo.push({
-              parentId: this.StructureTypeInfo.length - 1,
               description: DataType.Description,
               active: false,
-              dbId: DataType.DataPointTypeId
+              parentIndex: this.StructureTypeInfo.length - 1
             });
             DataType.SubStructures.forEach(
               (SubStructureType: any) => {
                 this.SubStructureTypeArray.push(this.fb.control(false));
                 this.SubStructureInfo.push({
-                  parentId: this.dataPointInfo.length - 1,
-                  grandParentId: this.StructureTypeInfo.length - 1,
                   description: SubStructureType.Description,
                   active: false,
                   visible: false,
-                  dbId: SubStructureType.SubStructureId
+                  checked: SubStructureType.Layer.Active,
+                  StructureTypeId: SType.StructureTypeId,
+                  DataPointTypeId: DataType.DataPointTypeId,
+                  SubStructureId: SubStructureType.SubStructureId,
+                  parentIndex: this.dataPointInfo.length - 1,
                 });
               }
             );
@@ -119,24 +116,24 @@ export class AppComponent {
   }
 
   updateVisibleLayers() {
-    this.SubStructureInfo.forEach(
-      (subStr: ILayersInformation, index: number) => {
+    // this.SubStructureInfo.forEach(
+    //   (subStr: ILayersInformation, index: number) => {
 
-        this.SubStructureGIS.splice(index, 1, {
-          visible: this.StructureTypeInfo[subStr.grandParentId].active &&
-            this.dataPointInfo[subStr.parentId].active &&
-            subStr.active,
-          StructureTypeId: this.StructureTypeInfo[subStr.grandParentId].dbId,
-          DataPointTypeId: this.dataPointInfo[subStr.parentId].dbId,
-          SubStructureId: subStr.dbId
-        })
-      }
-    )
+    //     this.SubStructureGIS.splice(index, 1, {
+    //       visible: this.StructureTypeInfo[subStr.grandParentId].active &&
+    //         this.dataPointInfo[subStr.parentId].active &&
+    //         subStr.active,
+    //       StructureTypeId: this.StructureTypeInfo[subStr.grandParentId].dbId,
+    //       DataPointTypeId: this.dataPointInfo[subStr.parentId].dbId,
+    //       SubStructureId: subStr.dbId
+    //     })
+    //   }
+    // )
 
   }
 
   test() {
-    this.SubStructureGIS.forEach((AA, i) => {
+    this.SubStructureInfo.forEach((AA, i) => {
       console.log(AA.visible, i);
     });
   }
