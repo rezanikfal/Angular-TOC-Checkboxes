@@ -21,7 +21,7 @@ export class GlobalCartesianDataService {
   layersInfo() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     // return this.http.get<any>('https://api.mocki.io/v1/0885b6cc') // f
-    return this.http.get<any>('https://api.mocki.io/v1/d3f9a5a2') // 3 datapoint for first datapoint
+    return this.http.get<any>('https://api.mocki.io/v1/5aa38880') // 3 datapoint for first datapoint
     // return this.http.get<any>('https://api.mocki.io/v1/084d4a08') // 3 Structure Type
 
   }

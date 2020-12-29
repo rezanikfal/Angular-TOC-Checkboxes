@@ -6,16 +6,19 @@ import { GlobalCartesianDataService } from '../app/global-cartesian-data.service
 
 interface ILayersInformation {
   description: string;
-  active: boolean;
-  parentIndex?: number
+  active?: boolean;
+  parentIndex?: number;
 }
 
 interface IFeatureData extends ILayersInformation {
   visible: boolean;
   checked: boolean;
   StructureTypeId: number;
+  StructureTypeIndex: number;
   DataPointTypeId: number;
+  DataPointTypeIndex: number;
   SubStructureId: number;
+  SubStructureIndex: number;
 }
 
 @Component({
@@ -31,7 +34,7 @@ export class AppComponent {
   constructor(
     private cartesianData: GlobalCartesianDataService,
     private fb: FormBuilder
-  ) { }
+  ) {}
 
   allLayers = new FormGroup({
     StructureTypesArray: this.fb.array([]),
@@ -65,31 +68,45 @@ export class AppComponent {
           description: SType.Description,
           active: false,
         });
-        SType.DataPointTypes.forEach(
-          (DataType: any) => {
-            this.DataPointArray.push(this.fb.control(false));
-            this.dataPointInfo.push({
-              description: DataType.Description,
-              active: false,
-              parentIndex: this.StructureTypeInfo.length - 1
+        SType.DataPointTypes.forEach((DataType: any) => {
+          this.DataPointArray.push(this.fb.control(false));
+          this.dataPointInfo.push({
+            description: DataType.Description,
+            active: false,
+            parentIndex: this.StructureTypeInfo.length - 1,
+          });
+          DataType.SubStructures.forEach((SubStructureType: any) => {
+            this.SubStructureTypeArray.push(this.fb.control(false));
+            this.SubStructureInfo.push({
+              description: SubStructureType.Description,
+              visible: false,
+              checked: SubStructureType.Layer.Active,
+              StructureTypeId: SType.StructureTypeId,
+              StructureTypeIndex: this.StructureTypeInfo.length - 1,
+              DataPointTypeId: DataType.DataPointTypeId,
+              DataPointTypeIndex: this.dataPointInfo.length - 1,
+              SubStructureId: SubStructureType.SubStructureId,
+              SubStructureIndex: this.SubStructureInfo.length, //The index for the array itself (before adding the new element)
             });
-            DataType.SubStructures.forEach(
-              (SubStructureType: any) => {
-                this.SubStructureTypeArray.push(this.fb.control(false));
-                this.SubStructureInfo.push({
-                  description: SubStructureType.Description,
-                  active: false,
-                  visible: false,
-                  checked: SubStructureType.Layer.Active,
-                  StructureTypeId: SType.StructureTypeId,
-                  DataPointTypeId: DataType.DataPointTypeId,
-                  SubStructureId: SubStructureType.SubStructureId,
-                  parentIndex: this.dataPointInfo.length - 1,
-                });
-              }
-            );
-          }
-        );
+          });
+        });
+      });
+
+      this.SubStructureInfo.forEach((SubStr) => {
+        if (SubStr.checked) {
+          this.StructureTypeArray.get(
+            String(SubStr.StructureTypeIndex)
+          ).setValue(true);
+          this.StructureTypeInfo[SubStr.StructureTypeIndex].active = true;
+          this.DataPointArray.get(String(SubStr.DataPointTypeIndex)).setValue(
+            true
+          );
+          this.dataPointInfo[SubStr.DataPointTypeIndex].active = true;
+          this.SubStructureTypeArray.get(
+            String(SubStr.SubStructureIndex)
+          ).setValue(true);
+          this.SubStructureInfo[SubStr.SubStructureIndex].visible = true;
+        }
       });
 
       this.allLayers.valueChanges.subscribe(({ StructureTypesArray }) => {
@@ -108,7 +125,7 @@ export class AppComponent {
 
       this.allDataPoints.valueChanges.subscribe(({ SubStructuresArray }) => {
         SubStructuresArray.forEach((e: boolean, i: number) => {
-          this.SubStructureInfo[i].active = e;
+          this.SubStructureInfo[i].checked = e;
         });
         this.updateVisibleLayers();
       });
@@ -116,25 +133,17 @@ export class AppComponent {
   }
 
   updateVisibleLayers() {
-    // this.SubStructureInfo.forEach(
-    //   (subStr: ILayersInformation, index: number) => {
-
-    //     this.SubStructureGIS.splice(index, 1, {
-    //       visible: this.StructureTypeInfo[subStr.grandParentId].active &&
-    //         this.dataPointInfo[subStr.parentId].active &&
-    //         subStr.active,
-    //       StructureTypeId: this.StructureTypeInfo[subStr.grandParentId].dbId,
-    //       DataPointTypeId: this.dataPointInfo[subStr.parentId].dbId,
-    //       SubStructureId: subStr.dbId
-    //     })
-    //   }
-    // )
-
+    this.SubStructureInfo.forEach((SubStr) => {
+      SubStr.visible =
+        this.StructureTypeInfo[SubStr.StructureTypeIndex].active &&
+        this.dataPointInfo[SubStr.DataPointTypeIndex].active &&
+        this.SubStructureInfo[SubStr.SubStructureIndex].checked;
+    });
   }
 
   test() {
     this.SubStructureInfo.forEach((AA, i) => {
-      console.log(AA.visible, i);
+      console.log(AA, i);
     });
   }
 }

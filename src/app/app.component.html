@@ -8,7 +8,7 @@
                     <form [formGroup]="allDataPoints" *ngIf="dataPointInfo[DTid].active">
                       <div formArrayName='SubStructuresArray'
                           *ngFor="let item of SubStructureTypeArray.controls; let SSid=index">
-                          <ng-container  *ngIf="SubStructureInfo[SSid].parentIndex ==DTid">
+                          <ng-container  *ngIf="SubStructureInfo[SSid].DataPointTypeIndex ==DTid">
                           	<input style="margin-left: 40px;" type="checkbox" [formControlName]='SSid'> {{SubStructureInfo[SSid].description}}
                           </ng-container>
                       </div>
